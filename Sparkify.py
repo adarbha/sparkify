@@ -12,6 +12,7 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler, MinMaxScaler
 from pyspark.ml.classification import LogisticRegression, GBTClassifier, RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 if __name__ == '__main__':
 
@@ -128,18 +129,26 @@ if __name__ == '__main__':
     # Split the dataset
     rest, validate = master_df.randomSplit([0.8, 0.2], seed = 42)
 
-    # Using Gradient Boosted Tree Classifier
+    # Using Gradient Boosted Tree Classifier and performing K-fold cross validation using parambuilder
     gdbt = GBTClassifier(featuresCol="scaledFeatures")
     pipeline = Pipeline(stages = [assembler, scaler, gdbt])
-    model = pipeline.fit(rest)
+    paramGrid = ParamGridBuilder() \
+    .addGrid(gdbt.maxDepth, [5, 10]) \
+    .addGrid(gdbt.maxBins, [32, 64]) \
+    .build() 
 
-    # Run the model on validation set
+
+    crossval = CrossValidator(estimator=pipeline,
+                          estimatorParamMaps=paramGrid,
+                          evaluator=MulticlassClassificationEvaluator(),
+                          numFolds=3)
+
+    model = crossval.fit(rest)
+
     result = model.transform(validate)
 
-    # Model Evaluation
     evaluator = MulticlassClassificationEvaluator(predictionCol="prediction", labelCol="label")
     f1_score = evaluator.evaluate(result, {evaluator.metricName: "f1"})
-    print("f1: {}".format(f1_score))
 
 
     # Write results
