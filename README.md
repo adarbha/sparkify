@@ -12,6 +12,7 @@
 3. Files and their description
 	- README.md - This file
 	- Sparkify.ipynb - Jupyter notebook where a classification model is built on a smaller dataset mini_sparkify_event_data.json. This code acts as a basis for building the script file uploaded to Amazon EMR cluster for building a data pipeline and runnning the model on full dataset
+	- Sparkify.py - This is a script file that is transfered to AWS EMR cluster to train the model on 12GB sparkify dataset. Script file is develped using the notebook as a prototype
 	- mimi_sparkify_event_data.json.zip - Compressed file of the smaller json mentioned above
 	- requirements.txt - Python dependencies for running the notebook
 	- license.txt - MIT license file
@@ -19,7 +20,7 @@
    
     
 4. Results <br/>
-	From mini_sparkify dataset
+	From sparkify notebook run on mini_sparkify dataset
 	- From printSchema, it has been identified that page column records the events in the dataset. There are 52 Cancellations in the dataset and these users have been assigned to churned users group
 	- Following features have been engineered as they showed correlations with the churn patterns
 		- Paid/free -  paid users have a higher affinity to leave
@@ -32,15 +33,20 @@
 		- Thumbs ratio - defined as the ratio of thumbsup to thumbsdown, unchurned users tend to like the quality of songs compared to unchurned users, based on this ratio
 	- Modeling performed based on the features mentioned above. Three classification models(logistic, gradient boosting, random forest) were tested evaluating f1-score as the dataset had a class imbalance
 	- Gradient Boosting resulted in the best f1-score of 0.72
-	- Crossvalidation and hyperparameter tuning using grid-based search have not been performed due to limited computational resources on workspace provided
+	
+	From script file run full dataset
+	- Crossvalidation and hyperparameter tuning using grid-based search have been performed on AWS EMR cluster
+	- Search for optimal parameters by cross-validation is performed only on Gradient Boosted model as this model generated highest f1-score while prototyping in the notebook. f1-score of 0.71 is achieved on the validation dataset using this approach
 
 
 
 5. Next steps
+- Tune hyperparameters to check if we can improve on this score
+- Downgrade events can be factored in to churn and a new model generated to predict such events
+- Use updated version of gradient boosting, like LightGBM, to find out if we can enhance computational performance and model performance
 
 
-
-   
+Medium post - https://medium.com/@arjunsdarbha/customer-churn-prediction-ffc9a29852ce
 
 
 ### License
